@@ -63,7 +63,8 @@ Caso você não tenha o PostgreSQL instalado localmente, siga os passos abaixo p
     ```bash
     docker ps
     ```
-  O container que deve aparecer na lista tem a imagem com o nome ```bitnami/postgresql:latest```.
+    O container que deve aparecer na lista tem a imagem com o nome ```bitnami/postgresql:latest```.
+  
 5. Tudo pronto!
   - O banco de dados está em execução e pronto para uso.
 
