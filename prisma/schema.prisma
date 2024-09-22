@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  // emailVerified     Boolean  @default(false) @map("email_verified")
+  // verificationToken String?  @map("verification_token")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt() @map("updated_at")
+
+  barbershops Barbershop[]
+  members     Member[]
+
+  @@map("users")
+}
+
+model Barbershop {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  slug      String
+  address   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt() @map("updated_at")
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String? @map("user_id")
+
+  members  Member[]
+  services Service[]
+
+  categories Category[]
+
+  @@map("barbershops")
+}
+
+model Member {
+  id        String   @id @default(uuid())
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String     @map("barbershop_id")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceId String?  @map("service_id")
+
+  schedules    BarberSchedule[]
+  appointments Appointment[]
+
+  @@unique([barbershopId, userId])
+  @@map("members")
+}
+
+model Service {
+  id                String   @id @default(uuid())
+  name              String
+  durationInMinutes Int      @map("duration_in_minutes")
+  price             Float
+  available         Boolean  @default(false)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String     @map("barbershop_id")
+
+  categories   Category[]
+  members      Member[]
+  appointments Appointment[]
+
+  @@map("services")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barbershopId String     @map("barbershop_id")
+
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceId String?  @map("service_id")
+
+  @@map("categories")
+}
+
+model BarberSchedule {
+  id        String   @id @default(uuid())
+  dayOfWeek Int      @map("day_of_week")
+  startTime DateTime @map("start_time")
+  endTime   DateTime @map("end_time")
+  available Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  barber   Member @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  barberId String @map("barber_id")
+
+  breaks BarberScheduleBreak[]
+
+  @@unique([dayOfWeek, barberId])
+  @@map("barber_schedules")
+}
+
+model BarberScheduleBreak {
+  id        String   @id @default(uuid())
+  startTime DateTime @map("start_time")
+  endTime   DateTime @map("end_time")
+  // repeat     Boolean     @default(false)
+  // repeatDays DayOfWeek[] @map("repeat_days")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  schedule   BarberSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  scheduleId String         @map("schedule_id")
+
+  @@map("barber_schedule_breaks")
+}
+
+model Appointment {
+  id              String   @id @default(uuid())
+  appointmentTime DateTime @map("appointment_time")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  service   Service @relation(fields: [serviceId], references: [id])
+  serviceId String  @map("service_id")
+
+  barber   Member @relation(fields: [barberId], references: [id])
+  barberId String @map("barber_id")
+
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String   @map("customer_id")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  email     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  appointments Appointment[]
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
