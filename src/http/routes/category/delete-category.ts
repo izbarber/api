@@ -3,22 +3,26 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod'
 import z from 'zod'
 
 import { NotFoundException } from '@/http/errors/not-found-exception'
+import { UnprocessableEntityExeception } from '@/http/errors/unprocessable-entity-exception'
 import { prisma } from '@/lib/prisma'
 
 export async function deleteCategory(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: 'DELETE',
-    url: '/barbershops/:barbershopId/categories/:categoryId',
+    url: '/categories/:categoryId',
     schema: {
       tags: ['Categorias'],
       summary: 'Deletar categoria',
+      headers: z.object({
+        'x-barbershop-id': z.string().uuid(),
+      }),
       params: z.object({
-        barbershopId: z.string().uuid(),
         categoryId: z.string().uuid(),
       }),
     },
     async handler(request, reply) {
-      const { barbershopId, categoryId } = request.params
+      const { 'x-barbershop-id': barbershopId } = request.headers
+      const { categoryId } = request.params
 
       const barbershop = await prisma.barbershop.findUnique({
         where: {
@@ -36,6 +40,23 @@ export async function deleteCategory(app: FastifyInstance) {
         },
       })
 
+      const isCategoryInUse = await prisma.service.findFirst({
+        where: {
+          categories: {
+            some: {
+              id: categoryId,
+            },
+          },
+        },
+      })
+
+      if (isCategoryInUse) {
+        throw new UnprocessableEntityExeception(
+          'Não é possível excluir uma categoria que está vinculada há um serviço',
+        )
+      }
+
+      console.log('hello', isCategoryInUse)
       if (!category) {
         throw new NotFoundException('Categoria não encontrada')
       }

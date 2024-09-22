@@ -4,6 +4,7 @@ import { ZodError } from 'zod'
 import { ConflictException } from './errors/conflict-exception'
 import { NotFoundException } from './errors/not-found-exception'
 import { UnauthorizedException } from './errors/unauthorized-exception'
+import { UnprocessableEntityExeception } from './errors/unprocessable-entity-exception'
 
 export const errorHandler: FastifyInstance['errorHandler'] = (
   error,
@@ -28,6 +29,10 @@ export const errorHandler: FastifyInstance['errorHandler'] = (
 
   if (error instanceof NotFoundException) {
     return reply.status(404).send({ message: error.message })
+  }
+
+  if (error instanceof UnprocessableEntityExeception) {
+    return reply.status(422).send({ message: error.message })
   }
 
   console.log(error)
