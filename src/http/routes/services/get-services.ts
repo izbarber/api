@@ -35,7 +35,6 @@ export async function getServices(app: FastifyInstance) {
         },
         select: {
           id: true,
-          isAvailable: true,
           price: true,
           name: true,
           categories: {
