@@ -11,7 +11,9 @@ import {
 
 import { errorHandler } from './error-handler'
 import { createAppointment } from './routes/appointment/create-appointment'
+import { getMyBarbershops } from './routes/auth/get-my-barbershops'
 import { getProfile } from './routes/auth/get-profile'
+import { signIn } from './routes/auth/sign-in'
 import { signUpBarbershop } from './routes/auth/sign-up-barbershop'
 import { createWeeklyBarberSchedule } from './routes/barber-schedule/create-weekly-barber-schedule'
 import { getBarberSchedule } from './routes/barber-schedule/get-barber-schedule'
@@ -57,6 +59,8 @@ app.register(fastifySwaggerUI, {
   routePrefix: '/docs',
 })
 
+app.register(signIn)
+app.register(getMyBarbershops)
 app.register(getProfile)
 app.register(signUpBarbershop)
 
