@@ -8,12 +8,12 @@ import { prisma } from '@/lib/prisma'
 export async function createService(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().route({
     method: 'POST',
-    url: '/barbershops/:barbershopId/services',
+    url: '/services',
     schema: {
       tags: ['Serviços'],
       summary: 'Criação de serviço',
-      params: z.object({
-        barbershopId: z.string().uuid(),
+      headers: z.object({
+        'x-barbershop-id': z.string().uuid(),
       }),
       body: z.object({
         name: z.string().min(1, { message: 'O nome é obrigatório' }),
@@ -24,17 +24,17 @@ export async function createService(app: FastifyInstance) {
         price: z
           .number()
           .min(0, { message: 'O preço deve ser um valor positivo' }),
-        available: z.boolean().default(false),
-        categoryIds: z
-          .array(z.string().uuid({ message: 'ID de categoria inválido' }))
-          .nonempty({
-            message:
-              'O serviço deve estar associado a pelo menos uma categoria.',
-          }),
+        // available: z.boolean().default(false),
+        categoryId: z.string().uuid({ message: 'ID de categoria inválido' }),
+        // image: z
+        //   .any()
+        //   .refine((file) => file && file.mimetype.startsWith('image/'), {
+        //     message: 'Um arquivo de imagem válido é obrigatório',
+        //   }),
       }),
     },
     async handler(request, reply) {
-      const { barbershopId } = request.params
+      const { 'x-barbershop-id': barbershopId } = request.headers
 
       const barbershop = await prisma.barbershop.findUnique({
         where: {
@@ -46,19 +46,16 @@ export async function createService(app: FastifyInstance) {
         throw new NotFoundException('Barbearia não encontrada')
       }
 
-      const { name, price, available, durationInMinutes, categoryIds } =
-        request.body
+      const { name, price, durationInMinutes, categoryId } = request.body
 
       await prisma.service.create({
         data: {
           name,
           price,
-          available,
+          // available,
           durationInMinutes,
           barbershopId,
-          categories: {
-            connect: categoryIds.map((categoryId) => ({ id: categoryId })),
-          },
+          categoryId,
         },
       })
 

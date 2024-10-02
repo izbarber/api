@@ -25,12 +25,7 @@ export async function updateService(app: FastifyInstance) {
         price: z
           .number()
           .min(0, { message: 'O preço deve ser um valor positivo' }),
-        categoryIds: z
-          .array(z.string().uuid({ message: 'ID de categoria inválido' }))
-          .nonempty({
-            message:
-              'O serviço deve estar associado a pelo menos uma categoria.',
-          }),
+        categoryId: z.string().uuid({ message: 'ID de categoria inválido' }),
       }),
     },
     async handler(request, reply) {
@@ -56,7 +51,7 @@ export async function updateService(app: FastifyInstance) {
         throw new NotFoundException('Serviço não encontrado')
       }
 
-      const { name, categoryIds, durationInMinutes, price } = request.body
+      const { name, categoryId, durationInMinutes, price } = request.body
 
       await prisma.service.update({
         where: {
@@ -66,9 +61,7 @@ export async function updateService(app: FastifyInstance) {
           name,
           durationInMinutes,
           price,
-          categories: {
-            connect: categoryIds.map((categoryId) => ({ id: categoryId })),
-          },
+          categoryId,
         },
       })
 

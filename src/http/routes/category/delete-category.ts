@@ -42,11 +42,7 @@ export async function deleteCategory(app: FastifyInstance) {
 
       const isCategoryInUse = await prisma.service.findFirst({
         where: {
-          categories: {
-            some: {
-              id: categoryId,
-            },
-          },
+          categoryId,
         },
       })
 
