@@ -19,9 +19,9 @@ export async function getBarbershopBySlug(app: FastifyInstance) {
     async handler(request, reply) {
       const { barbershopSlug } = request.params
 
-      const barbershop = await prisma.barbershop.findUnique({
+      const barbershop = await prisma.barbershop.findFirst({
         where: {
-          id: barbershopSlug,
+          slug: barbershopSlug,
         },
         select: {
           id: true,
