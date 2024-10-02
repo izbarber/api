@@ -17,6 +17,7 @@ import { signIn } from './routes/auth/sign-in'
 import { signUpBarbershop } from './routes/auth/sign-up-barbershop'
 import { createWeeklyBarberSchedule } from './routes/barber-schedule/create-weekly-barber-schedule'
 import { getBarberSchedule } from './routes/barber-schedule/get-barber-schedule'
+import { getBarbershopBySlug } from './routes/barbershop/get-barbershop-by-slug'
 import { createCategory } from './routes/category/create-category'
 import { deleteCategory } from './routes/category/delete-category'
 import { getCategories } from './routes/category/get-categories'
@@ -82,6 +83,8 @@ app.register(deleteMember)
 app.register(getMembers)
 
 app.register(createAppointment)
+
+app.register(getBarbershopBySlug)
 
 app.listen({ port: 3333 }).then(() => {
   console.log('🚀 API is running at http://localhost:3333')
