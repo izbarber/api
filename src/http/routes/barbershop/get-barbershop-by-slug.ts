@@ -29,6 +29,20 @@ export async function getBarbershopBySlug(app: FastifyInstance) {
           phone: true,
           address: true,
           slug: true,
+          services: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              durationInMinutes: true,
+            },
+          },
+          categories: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       })
 
